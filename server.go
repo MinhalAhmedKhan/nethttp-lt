@@ -24,6 +24,12 @@ func main() {
 		}),
 	)
 
+	mux.Handle("/bye", http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(":("))
+		}),
+	)
+
 	server := http.Server{
 		Addr:              ":8080", // default is port 80
 		Handler:           mux,
