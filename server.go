@@ -5,14 +5,20 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 )
-
 
 func main() {
 
-	var mux = multiplexer{
-		make(map[string]http.Handler),
-	}
+	muxy := http.NewServeMux()
+	muxy.Handle("/hello", http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("bye bye"))
+		}),
+	)
+
+	var mux = NewMultiplexer()
+
 	mux.Handle("/health", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("healthy"))
@@ -32,7 +38,7 @@ func main() {
 
 	server := http.Server{
 		Addr:              ":8080", // default is port 80
-		Handler:           mux,
+		Handler:           muxy,
 		TLSConfig:         nil,
 		ReadTimeout:       0,
 		ReadHeaderTimeout: 0,
@@ -46,20 +52,30 @@ func main() {
 		ConnContext:       modifyConnectionContext,
 	}
 
+	fmt.Println("Server Starting 🚀")
 	if err := server.ListenAndServe(); err != nil {
 		fmt.Errorf("Failed to start server")
 	}
-
 }
-
 
 // ---------- Handler ----------
 type multiplexer struct {
+	mu        sync.RWMutex // make endpoints thread safe
 	endpoints map[string]http.Handler
 }
 
-func (m multiplexer) ServeHTTP(w http.ResponseWriter, r *http.Request)  {
-	if handler, ok := m.endpoints[r.URL.Path]; ok {
+func NewMultiplexer() *multiplexer {
+	return &multiplexer{
+		mu:        sync.RWMutex{},
+		endpoints: make(map[string]http.Handler),
+	}
+}
+
+func (mux *multiplexer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	mux.mu.RLock()
+	defer mux.mu.RUnlock()
+
+	if handler, ok := mux.endpoints[r.URL.Path]; ok {
 		handler.ServeHTTP(w, r)
 		return
 	}
@@ -67,10 +83,11 @@ func (m multiplexer) ServeHTTP(w http.ResponseWriter, r *http.Request)  {
 	w.Write([]byte("Page not found"))
 }
 
-func (m multiplexer) Handle(uri string, handler http.Handler)  {
-	m.endpoints[uri] = handler
+func (mux *multiplexer) Handle(uri string, handler http.Handler) {
+	mux.mu.Lock()
+	defer mux.mu.Unlock()
+	mux.endpoints[uri] = handler
 }
-
 
 // ---------- ConContext ----------
 func modifyConnectionContext(ctx context.Context, c net.Conn) context.Context {
