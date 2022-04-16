@@ -32,13 +32,14 @@ func main() {
 
 	mux.Handle("/bye", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(":("))
+			value := r.Context().Value("minhal").(string)
+			w.Write([]byte(value))
 		}),
 	)
 
 	server := http.Server{
 		Addr:              ":8080", // default is port 80
-		Handler:           muxy,
+		Handler:           mux,
 		TLSConfig:         nil,
 		ReadTimeout:       0,
 		ReadHeaderTimeout: 0,
@@ -91,5 +92,6 @@ func (mux *multiplexer) Handle(uri string, handler http.Handler) {
 
 // ---------- ConContext ----------
 func modifyConnectionContext(ctx context.Context, c net.Conn) context.Context {
-	return ctx
+	modifiedCtx := context.WithValue(ctx, "minhal", "khan")
+	return modifiedCtx
 }
