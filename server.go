@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"sync"
 )
@@ -32,7 +30,6 @@ func main() {
 
 	mux.Handle("/bye", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			value := r.Context().Value("minhal").(string)
 			w.Write([]byte(value))
 		}),
 	)
@@ -50,7 +47,7 @@ func main() {
 		ConnState:         nil,
 		ErrorLog:          nil,
 		BaseContext:       nil,
-		ConnContext:       modifyConnectionContext,
+		ConnContext:       nil,
 	}
 
 	fmt.Println("Server Starting 🚀")
@@ -88,10 +85,4 @@ func (mux *multiplexer) Handle(uri string, handler http.Handler) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 	mux.endpoints[uri] = handler
-}
-
-// ---------- ConContext ----------
-func modifyConnectionContext(ctx context.Context, c net.Conn) context.Context {
-	modifiedCtx := context.WithValue(ctx, "minhal", "khan")
-	return modifiedCtx
 }
