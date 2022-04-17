@@ -17,7 +17,7 @@ func main() {
 
 	var mux = NewMultiplexer()
 
-	mux.Handle("/health", http.HandlerFunc(
+	mux.Handle("/health", loggerMiddleware(
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("healthy"))
 		}),
@@ -30,7 +30,7 @@ func main() {
 
 	mux.Handle("/bye", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte(value))
+			w.Write([]byte("bye"))
 		}),
 	)
 
@@ -85,4 +85,12 @@ func (mux *multiplexer) Handle(uri string, handler http.Handler) {
 	mux.mu.Lock()
 	defer mux.mu.Unlock()
 	mux.endpoints[uri] = handler
+}
+
+// ---------- Middlewares ----------
+func loggerMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("I got a request")
+		next.ServeHTTP(w, r)
+	}
 }
