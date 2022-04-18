@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 )
 
@@ -25,6 +26,26 @@ func main() {
 	mux.Handle("/hello", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("bye"))
+		}),
+	)
+
+	mux.Handle("/video/squid-game", http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			f, err := os.Open("squid-game.mp4")
+			defer f.Close()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			fileInfo, err := f.Stat()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			// automatically set by ServeContent
+			w.Header().Set("Content-Type", "video/mp4")
+			http.ServeContent(w, r, "squid-game.mp4", fileInfo.ModTime(), f)
 		}),
 	)
 
@@ -54,6 +75,9 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		fmt.Errorf("Failed to start server")
 	}
+
+	// zero values used for the server config, therefore no timeouts
+	//http.ListenAndServe(":80", http.NewServeMux())
 }
 
 // ---------- Handler ----------
