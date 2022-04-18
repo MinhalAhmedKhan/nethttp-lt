@@ -53,16 +53,16 @@ func main() {
 		}),
 	)
 
-	mux.Handle("/video/stranger-things-full", http.HandlerFunc(
+	mux.Handle("/poster/stranger-things", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			f, err := os.Open("static/stranger-things.mp4")
+			f, err := os.Open("static/poster.jpeg")
 			defer f.Close()
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 			// automatically set by ServeContent
-			w.Header().Set("Content-Type", "video/mp4")
+			w.Header().Set("Content-Type", "image/jpeg")
 			io.Copy(w, f)
 		}),
 	)
