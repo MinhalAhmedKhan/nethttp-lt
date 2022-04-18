@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"sync"
@@ -45,7 +46,22 @@ func main() {
 			}
 			// automatically set by ServeContent
 			w.Header().Set("Content-Type", "video/mp4")
+			// setting modTime to zero or unix zero will omit setting the `Last-Modified` header
 			http.ServeContent(w, r, "stranger-things.mp4", fileInfo.ModTime(), f)
+		}),
+	)
+
+	mux.Handle("/video/stranger-things-full", http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			f, err := os.Open("stranger-things.mp4")
+			defer f.Close()
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			// automatically set by ServeContent
+			w.Header().Set("Content-Type", "video/mp4")
+			io.Copy(w, f)
 		}),
 	)
 
