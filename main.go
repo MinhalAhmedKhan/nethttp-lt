@@ -16,6 +16,8 @@ func main() {
 			w.Write([]byte("bye bye"))
 		}),
 	)
+	fs := http.FileServer(http.Dir("./static"))
+	muxy.Handle("/static/", http.StripPrefix("/static/", fs))
 
 	var mux = NewMultiplexer()
 
@@ -32,7 +34,7 @@ func main() {
 
 	mux.Handle("/video/stranger-things", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			f, err := os.Open("stranger-things.mp4")
+			f, err := os.Open("static/stranger-things.mp4")
 			defer f.Close()
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -53,7 +55,7 @@ func main() {
 
 	mux.Handle("/video/stranger-things-full", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			f, err := os.Open("stranger-things.mp4")
+			f, err := os.Open("static/stranger-things.mp4")
 			defer f.Close()
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
