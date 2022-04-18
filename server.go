@@ -29,9 +29,9 @@ func main() {
 		}),
 	)
 
-	mux.Handle("/video/squid-game", http.HandlerFunc(
+	mux.Handle("/video/stranger-things", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			f, err := os.Open("squid-game.mp4")
+			f, err := os.Open("stranger-things.mp4")
 			defer f.Close()
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -45,7 +45,7 @@ func main() {
 			}
 			// automatically set by ServeContent
 			w.Header().Set("Content-Type", "video/mp4")
-			http.ServeContent(w, r, "squid-game.mp4", fileInfo.ModTime(), f)
+			http.ServeContent(w, r, "stranger-things.mp4", fileInfo.ModTime(), f)
 		}),
 	)
 
