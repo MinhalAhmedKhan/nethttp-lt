@@ -1,12 +1,11 @@
-GET http://localhost:8080/hello
-Accept: application/json
-
-###
-GET http://localhost:8080/bye
-Accept: application/json
-
-###
 GET http://localhost:8080/health
-Accept: application/json
+###
 
+GET http://localhost:8080/home
+###
+
+GET http://localhost:8080/video/stranger-things
+###
+
+GET http://localhost:8080/poster/stranger-things
 ###

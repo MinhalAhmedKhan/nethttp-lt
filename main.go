@@ -23,12 +23,7 @@ func main() {
 
 	mux.Handle("/health", loggerMiddleware(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("healthy"))
-		}),
-	)
-	mux.Handle("/hello", http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("bye"))
+			w.Write([]byte("💩"))
 		}),
 	)
 
@@ -67,9 +62,9 @@ func main() {
 		}),
 	)
 
-	mux.Handle("/bye", http.HandlerFunc(
+	mux.Handle("/home", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("bye"))
+			http.Redirect(w, r, "/poster/stranger-things", http.StatusMovedPermanently)
 		}),
 	)
 
